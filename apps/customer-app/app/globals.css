@@ -1,0 +1,155 @@
+@import "tailwindcss";
+@source "../../../packages/ui/src";
+
+@variant dark (&:where(.dark, .dark *));
+
+/* ─────────── Light theme (default) ─────────── */
+:root {
+  color-scheme: light;
+  --background: #fafafa;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --border: #e4e4e7;
+  --input: #ffffff;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+  --accent-soft: rgba(16, 185, 129, 0.10);
+  --accent-strong: #059669;
+  --ring: #10b981;
+  --pattern: rgba(0, 0, 0, 0.06);
+}
+
+/* ─────────── Dark theme ─────────── */
+.dark {
+  color-scheme: dark;
+  --background: #0a0a0d;
+  --foreground: #f4f4f5;
+  --card: #18181b;
+  --card-foreground: #f4f4f5;
+  --border: #2a2a30;
+  --input: #1f1f23;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent-foreground: #052e1a;
+  --accent-soft: rgba(16, 185, 129, 0.16);
+  --pattern: rgba(255, 255, 255, 0.04);
+}
+
+/* ─────────── Accent palettes (data-accent on <html>) ─────────── */
+:root[data-accent="emerald"] { --accent: #10b981; --accent-strong: #059669; --accent-soft: rgba(16,185,129,0.10); --ring: #10b981; }
+:root[data-accent="sky"]     { --accent: #0ea5e9; --accent-strong: #0284c7; --accent-soft: rgba(14,165,233,0.10); --ring: #0ea5e9; }
+:root[data-accent="violet"]  { --accent: #8b5cf6; --accent-strong: #7c3aed; --accent-soft: rgba(139,92,246,0.12); --ring: #8b5cf6; }
+:root[data-accent="rose"]    { --accent: #f43f5e; --accent-strong: #e11d48; --accent-soft: rgba(244,63,94,0.12);  --ring: #f43f5e; }
+:root[data-accent="amber"]   { --accent: #f59e0b; --accent-strong: #d97706; --accent-soft: rgba(245,158,11,0.12); --ring: #f59e0b; }
+
+/* Dark variant boosts soft tone for visibility */
+.dark[data-accent="emerald"] { --accent-foreground: #052e1a; --accent-soft: rgba(16,185,129,0.16); }
+.dark[data-accent="sky"]     { --accent-foreground: #082f49; --accent-soft: rgba(14,165,233,0.18); }
+.dark[data-accent="violet"]  { --accent-foreground: #2e1065; --accent-soft: rgba(139,92,246,0.20); }
+.dark[data-accent="rose"]    { --accent-foreground: #4c0519; --accent-soft: rgba(244,63,94,0.20);  }
+.dark[data-accent="amber"]   { --accent-foreground: #451a03; --accent-soft: rgba(245,158,11,0.20); }
+
+/* ─────────── Tailwind theme bridge ─────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-border-theme: var(--border);
+  --default-border-color: var(--border);
+  --font-sans: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-mono: var(--font-geist-mono, ui-monospace, monospace);
+}
+
+@layer base {
+  *, ::after, ::before { border-color: var(--border); }
+  html, body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  ::selection { background: var(--accent-soft); }
+}
+
+@layer utilities {
+  .pattern-grid {
+    background-image: radial-gradient(circle at 1px 1px, var(--pattern) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  .border-themed { border-color: var(--border); }
+  .ring-accent { --tw-ring-color: var(--accent); }
+
+  /* Native-shell safe areas — iOS notch / home indicator and Android nav bar.
+     On the desktop browser these resolve to 0, so they're no-ops. */
+  .safe-pt { padding-top: env(safe-area-inset-top); }
+  .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-pl { padding-left: env(safe-area-inset-left); }
+  .safe-pr { padding-right: env(safe-area-inset-right); }
+  .safe-x  { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+}
+
+/* ─────────── Native-shell polish (Capacitor on iOS / Android) ─────────── */
+@layer base {
+  html {
+    /* Smooth fonts on iOS retina displays */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Stop iOS auto-zooming text on landscape rotation */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* No rubber-band overscroll past the chrome — the inner <main>
+       still scrolls normally because it owns its own overscroll region. */
+    overscroll-behavior-y: none;
+  }
+  body {
+    /* Drop the grey flash when tapping buttons / links on Android */
+    -webkit-tap-highlight-color: transparent;
+    /* Suppress iOS long-press callout on UI chrome (text is opted back in below) */
+    -webkit-touch-callout: none;
+  }
+  /* Re-enable selection / callout where users actually need it */
+  input, textarea, select, [contenteditable], [contenteditable] * {
+    -webkit-user-select: auto;
+    user-select: auto;
+    -webkit-touch-callout: default;
+  }
+}
+
+/* ─────────── Animations ─────────── */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right { animation: slideInRight 0.25s ease-out; }
+
+@keyframes gradient-x {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 6s ease infinite;
+}
+
+/* ─────────── Print Styles ─────────── */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print\:block { display: block !important; }
+  .break-after-page { break-after: page; }
+}

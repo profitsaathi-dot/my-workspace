@@ -1,0 +1,102 @@
+@import "tailwindcss";
+@source "../../../packages/ui/src";
+
+@variant dark (&:where(.dark, .dark *));
+
+/* ─────────── Light theme (default) ─────────── */
+:root {
+  color-scheme: light;
+  --background: #fafafa;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --border: #e4e4e7;
+  --input: #ffffff;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+  --accent-soft: rgba(16, 185, 129, 0.10);
+  --accent-strong: #059669;
+  --ring: #10b981;
+  --pattern: rgba(0, 0, 0, 0.06);
+}
+
+/* ─────────── Dark theme ─────────── */
+/* Tuned so cards visibly lift off the background.
+ *   bg     = darkest base
+ *   card   = clearly elevated (≈7% lighter)
+ *   input  = sits between card and muted so form fields read as inset
+ *   muted  = slightly brighter — hover, separators, chips
+ *   border = visible without being loud
+ */
+.dark {
+  color-scheme: dark;
+  --background: #0a0a0d;
+  --foreground: #f4f4f5;
+  --card: #18181b;
+  --card-foreground: #f4f4f5;
+  --border: #2a2a30;
+  --input: #1f1f23;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent-foreground: #052e1a;
+  --accent-soft: rgba(16, 185, 129, 0.16);
+  --pattern: rgba(255, 255, 255, 0.04);
+}
+
+/* ─────────── Accent palettes (data-accent on <html>) ─────────── */
+:root[data-accent="emerald"] { --accent: #10b981; --accent-strong: #059669; --accent-soft: rgba(16,185,129,0.10); --ring: #10b981; }
+:root[data-accent="sky"]     { --accent: #0ea5e9; --accent-strong: #0284c7; --accent-soft: rgba(14,165,233,0.10); --ring: #0ea5e9; }
+:root[data-accent="violet"]  { --accent: #8b5cf6; --accent-strong: #7c3aed; --accent-soft: rgba(139,92,246,0.12); --ring: #8b5cf6; }
+:root[data-accent="rose"]    { --accent: #f43f5e; --accent-strong: #e11d48; --accent-soft: rgba(244,63,94,0.12);  --ring: #f43f5e; }
+:root[data-accent="amber"]   { --accent: #f59e0b; --accent-strong: #d97706; --accent-soft: rgba(245,158,11,0.12); --ring: #f59e0b; }
+
+/* Dark variant boosts soft tone for visibility */
+.dark[data-accent="emerald"] { --accent-foreground: #052e1a; --accent-soft: rgba(16,185,129,0.16); }
+.dark[data-accent="sky"]     { --accent-foreground: #082f49; --accent-soft: rgba(14,165,233,0.18); }
+.dark[data-accent="violet"]  { --accent-foreground: #2e1065; --accent-soft: rgba(139,92,246,0.20); }
+.dark[data-accent="rose"]    { --accent-foreground: #4c0519; --accent-soft: rgba(244,63,94,0.20);  }
+.dark[data-accent="amber"]   { --accent-foreground: #451a03; --accent-soft: rgba(245,158,11,0.20); }
+
+/* ─────────── Tailwind theme bridge ─────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --default-border-color: var(--border);
+  --font-sans: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-mono: var(--font-geist-mono, ui-monospace, monospace);
+}
+
+@layer base {
+  *, ::after, ::before { border-color: var(--border); }
+  html, body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+  ::selection { background: var(--accent-soft); }
+}
+
+@layer utilities {
+  .pattern-grid {
+    background-image: radial-gradient(circle at 1px 1px, var(--pattern) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  .border-themed { border-color: var(--border); }
+  .ring-accent { --tw-ring-color: var(--accent); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right { animation: slideInRight 0.25s ease-out; }
