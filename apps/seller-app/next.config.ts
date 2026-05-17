@@ -2,8 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@workspace/ui"],
-   
-   allowedDevOrigins: ['plenty-allen-trout-mardi.trycloudflare.com'],
+  images: {
+  localPatterns: [
+    {
+      pathname: "/api/products/image/**",
+    },
+  ],
+},
 };
 
 export default nextConfig;

@@ -7,7 +7,7 @@ const withNextIntl = createNextIntlPlugin();
 const nextConfig: NextConfig = {
   basePath: '/user',
   transpilePackages: ["@workspace/ui"],
-  allowedDevOrigins: ['plenty-allen-trout-mardi.trycloudflare.com'],
+ 
   // Pin Turbopack's workspace root explicitly — silences the
   // "multiple lockfiles detected" warning when a stray
   // package-lock.json lives next to the active pnpm-lock.yaml.
