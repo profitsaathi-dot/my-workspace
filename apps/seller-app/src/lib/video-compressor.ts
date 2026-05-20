@@ -45,7 +45,7 @@ export interface CompressionOptions {
  */
 export async function compressVideo(
   file: File,
-  options: CompressionOptions = {}
+  options?: CompressionOptions
 ): Promise<File> {
   const {
     maxResolution = 1280,
@@ -53,7 +53,7 @@ export async function compressVideo(
     crf = 28, // Higher CRF = more compression
     preset = 'fast',
     onProgress,
-  } = options;
+  } = options || {};
 
   try {
     // Load FFmpeg
@@ -97,21 +97,28 @@ export async function compressVideo(
     ]);
 
     // Read output file
+    // Read output file
     const data = await ffmpeg.readFile(outputName);
     
     // Clean up
     await ffmpeg.deleteFile(inputName);
     await ffmpeg.deleteFile(outputName);
 
-    // Create compressed file
-    const blob = new Blob([data], { type: 'video/mp4' });
+    // Create compressed file - convert to proper Uint8Array
+    const uint8Data = typeof data === 'string' 
+      ? new TextEncoder().encode(data) 
+      : new Uint8Array(data);
+    const blob = new Blob([uint8Data], { type: 'video/mp4' });
     const compressedFile = new File(
       [blob],
       file.name.replace(/\.[^.]+$/, '.mp4'),
-      { type: 'video/mp4' }
-    );
+  {
+    type: 'video/mp4',
+  }
+);
 
-    return compressedFile;
+return compressedFile;
+
   } catch (error) {
     console.error('FFmpeg compression error:', error);
     throw new Error(
