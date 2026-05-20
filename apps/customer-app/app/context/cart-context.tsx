@@ -26,16 +26,22 @@ interface CartContextValue {
   /** Alias of removeItem kept for callers using the older name. */
   removeFromCart: (id: number) => Promise<void>;
   fetchCart: () => Promise<void>;
+  enabled: boolean;
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({ children, enabled = true }: { children: React.ReactNode; enabled?: boolean }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   // useCallback prevents unnecessary re-renders when passed to children
   const fetchCart = useCallback(async () => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const res = await fetch("/user/api/cart");
       if (res.ok) {
@@ -47,13 +53,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
 
   const syncItemWithServer = async (item: CartItem) => {
+    if (!enabled) return;
+    
     try {
       const payload = {
         id: item.id,
@@ -74,6 +82,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const removeItem = async (id: number) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
+    
+    if (!enabled) return;
+    
     try {
       await fetch(`/user/api/cart/${id}`, { method: "DELETE" });
     } catch (error) {
@@ -93,7 +104,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       );
 
       const changedItem = updated.find((i) => i.id === id);
-      if (changedItem) {
+      if (changedItem && enabled) {
         syncItemWithServer(changedItem);
       }
       return updated;
@@ -124,6 +135,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removeItem,
         removeFromCart: removeItem,
         fetchCart,
+        enabled,
       }}
     >
       {children}

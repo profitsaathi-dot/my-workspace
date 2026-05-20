@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useStoreInfo } from "../[storeToken]/context/store-info-context";
 
 export interface AuthUserData {
   name: string;
@@ -10,13 +11,29 @@ export interface AuthUserData {
 /**
  * Resolves whether the current visitor is registered (by hitting `/api/user`)
  * and prefills checkout-friendly user data from their default address.
+ * Only runs for INDIVIDUAL sellers, not SOCIAL sellers.
  */
 export const useAuth = () => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isRegisteredUser, setIsRegisteredUser] = useState(false);
   const [userData, setUserData] = useState<AuthUserData>({ name: "", email: "", phone: "", address: "" });
+  
+  const { isSocial, loading: storeLoading } = useStoreInfo();
 
   useEffect(() => {
+    // Wait for store info to load
+    if (storeLoading) {
+      return;
+    }
+
+    // Skip auth check for social sellers
+    if (isSocial) {
+      setIsCheckingAuth(false);
+      setIsRegisteredUser(false);
+      return;
+    }
+
+    // Only check auth for individual sellers
     const checkUserSession = async () => {
       try {
         const res = await fetch("/user/api/user");
@@ -45,7 +62,7 @@ export const useAuth = () => {
       }
     };
     checkUserSession();
-  }, []);
+  }, [isSocial, storeLoading]);
 
   return { isCheckingAuth, isRegisteredUser, setIsRegisteredUser, userData };
 };

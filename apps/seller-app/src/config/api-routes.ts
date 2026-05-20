@@ -76,11 +76,11 @@ export const apiRoutes = {
     cancel: (id: string | number) => `/api/v1/dynamic-prices/${id}/cancel`,
   },
   whatsapp: {
-    connect: "/api/v1/whatsapp/connect",
-    status: "/api/v1/whatsapp/status",
-    disconnect: "/api/v1/whatsapp/disconnect",
-    restart: "/api/v1/whatsapp/restart",
-    send: "/api/v1/whatsapp/send",
+    connect: "/api/v1/whatsapp/open/connect",
+    status: "/api/v1/whatsapp/open/status",
+    disconnect: "/api/v1/whatsapp/open/disconnect",
+    restart: "/api/v1/whatsapp/open/restart",
+    send: "/api/v1/whatsapp/open/send",
   },
   otp: {
     sendEmail: "/api/v1/otp/send/email",

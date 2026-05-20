@@ -13,6 +13,7 @@ import ProductImages from "./components/ProductImages";
 import ProductInfo from "./components/ProductInfo";
 import QuantitySelector from "./components/QuantitySelector";
 import CartActions from "./components/CartActions";
+import ProductReviews from "./components/ProductReviews";
 
 export default function ProductPage() {
   const t = useTranslations("customer.product");
@@ -98,6 +99,11 @@ export default function ProductPage() {
             product={product}
             pricing={{ finalPrice, displayOriginalPrice, isDiscount, discountPercent, appliedOffer }}
           />
+
+          {/* Reviews Section - Moved before quantity and buy now */}
+          <div className="pt-4 border-t border-themed">
+            <ProductReviews productId={product.id} />
+          </div>
 
           <QuantitySelector
             qty={qty}

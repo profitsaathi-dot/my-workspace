@@ -18,8 +18,17 @@ interface Props {
 
 export default function CartActions({ product, qty, onBuyNow, remainingStock, isLoggedIn }: Props) {
   const { getItemCount, cart, updateQty, removeFromCart, fetchCart } = useCart();
-  const { isSocial } = useStoreInfo();
+  const { isSocial, loading: storeLoading } = useStoreInfo();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  // Show loading state while determining seller type to prevent flicker
+  if (storeLoading) {
+    return (
+      <div className="flex flex-col gap-3 mb-2">
+        <div className="h-12 bg-muted/50 rounded-xl animate-pulse" />
+      </div>
+    );
+  }
 
   const cartQty = product ? getItemCount(product.id) : 0;
   const cartItem = product ? cart.find((item: any) => item.productDetails?.id === product.id) : null;

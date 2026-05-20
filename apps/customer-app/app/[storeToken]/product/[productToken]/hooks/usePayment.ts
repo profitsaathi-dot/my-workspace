@@ -11,6 +11,7 @@ interface PaymentProps {
   finalPrice: number;
   formData: { name: string; email: string; phone: string; address: string; comments: string; };
   appliedOffer: Offer | null;
+  dynamicPriceToken?: string; // Optional dynamic price token
 }
 
 export const usePayment = () => {
@@ -47,6 +48,7 @@ export const usePayment = () => {
       offerApplied: !!props.appliedOffer,
       purchaseType: "DIRECT",
       comments: props.formData.comments || "-",
+      dynamicPriceToken: props.dynamicPriceToken || null, // Include dynamic price token
     };
 
     const res = await fetch("/user/api/orders", {

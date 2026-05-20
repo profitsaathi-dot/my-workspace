@@ -82,7 +82,11 @@ export const authOptions: NextAuthOptions = {
   // plain cookies; setting this explicitly avoids inconsistent behavior.
   useSecureCookies: useSecure,
 
-  session: { strategy: "jwt" },
+  session: { 
+    strategy: "jwt",
+    // Match backend's refresh token TTL (14 days)
+    maxAge: 14 * 24 * 60 * 60, // 14 days in seconds
+  },
 
   pages: {
     signIn: "/login",
@@ -280,9 +284,16 @@ export const authOptions: NextAuthOptions = {
 
       // Token still valid (60s buffer before expiry).
       const expiresAt = (token.expiresAt as number | undefined) ?? 0;
-      if (Date.now() < expiresAt * 1000 - 60_000) return token;
+      const now = Math.floor(Date.now() / 1000);
+      const timeUntilExpiry = expiresAt - now;
+      
+      // If token is still valid (more than 60s until expiry), return as-is
+      if (timeUntilExpiry > 60) {
+        return token;
+      }
 
-      // Expired — rotate it.
+      // Token expired or about to expire — try to refresh
+      console.log(`[auth] Token expiring in ${timeUntilExpiry}s, attempting refresh...`);
       return refreshAccessToken(token);
     },
     async session({ session, token }) {

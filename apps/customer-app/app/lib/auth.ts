@@ -156,7 +156,11 @@ export const authOptions: NextAuthOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
 
-  session: { strategy: "jwt" },
+  session: { 
+    strategy: "jwt",
+    // Match backend's refresh token TTL (14 days)
+    maxAge: 14 * 24 * 60 * 60, // 14 days in seconds
+  },
 
   cookies: {
     sessionToken: {

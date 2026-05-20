@@ -29,6 +29,7 @@ import {
   formatINR,
 } from "@workspace/ui";
 import { encryptAES } from "@/src/lib/crypto/aes";
+import { compressVideo, isFFmpegSupported } from "@/src/lib/video-compressor";
 import { useT } from "@/src/i18n/useT";
 
 type Status = "ACTIVE" | "INACTIVE";
@@ -54,6 +55,15 @@ const COMPRESSION_OPTS = {
   maxSizeMB: 1,
   maxWidthOrHeight: 1600,
   useWebWorker: true,
+};
+
+// Auto video compression settings using FFmpeg
+const AUTO_VIDEO_COMPRESSION = {
+  enabled: true,
+  maxResolution: 1280,
+  bitrate: '800k',
+  crf: 28,
+  preset: 'fast' as const,
 };
 
 const empty: FormState = {
@@ -117,6 +127,8 @@ export default function NewProductPage() {
 
   const onPickFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
+    
+    setToast({ kind: "ok", msg: `Processing ${files.length} file(s)...` });
     const next: MediaItem[] = [];
 
     for (const file of Array.from(files)) {
@@ -124,15 +136,67 @@ export default function NewProductPage() {
       const isImage = file.type.startsWith("image/");
 
       if (isVideo) {
-        if (file.size > 20 * 1024 * 1024) {
-          setToast({ kind: "err", msg: "Video must be under 20MB" });
+        const originalSizeMB = (file.size / 1024 / 1024).toFixed(1);
+        
+        if (file.size > 200 * 1024 * 1024) {
+          setToast({ kind: "err", msg: `${file.name}: File too large (${originalSizeMB}MB). Max 200MB.` });
           continue;
         }
-        next.push({
-          file,
-          preview: URL.createObjectURL(file),
-          type: "video",
-        });
+        
+        // Auto-compress videos using FFmpeg
+        if (AUTO_VIDEO_COMPRESSION.enabled && isFFmpegSupported()) {
+          try {
+            setToast({ kind: "ok", msg: `Compressing ${file.name} (${originalSizeMB}MB)... Please wait.` });
+            
+            const compressed = await compressVideo(file, {
+              maxResolution: AUTO_VIDEO_COMPRESSION.maxResolution,
+              bitrate: AUTO_VIDEO_COMPRESSION.bitrate,
+              crf: AUTO_VIDEO_COMPRESSION.crf,
+              preset: AUTO_VIDEO_COMPRESSION.preset,
+              onProgress: (progress) => {
+                if (progress % 10 === 0) {
+                  setToast({ kind: "ok", msg: `Compressing ${file.name}... ${progress}%` });
+                }
+              },
+            });
+            
+            const compressedSizeMB = (compressed.size / 1024 / 1024).toFixed(1);
+            
+            if (compressed.size > 50 * 1024 * 1024) {
+              setToast({ kind: "err", msg: `${file.name}: Still ${compressedSizeMB}MB after compression` });
+              continue;
+            }
+            
+            next.push({
+              file: compressed,
+              preview: URL.createObjectURL(compressed),
+              type: "video",
+            });
+            
+            const savings = ((1 - compressed.size / file.size) * 100).toFixed(0);
+            setToast({ kind: "ok", msg: `✓ ${file.name}: ${originalSizeMB}MB → ${compressedSizeMB}MB (${savings}% smaller)` });
+          } catch (err) {
+            console.error("Video compression failed:", err);
+            const errorMsg = err instanceof Error ? err.message : "Unknown error";
+            setToast({ kind: "err", msg: `${file.name}: ${errorMsg}` });
+            
+            if (file.size <= 50 * 1024 * 1024) {
+              next.push({ file, preview: URL.createObjectURL(file), type: "video" });
+              setToast({ kind: "ok", msg: `${file.name}: Using original (${originalSizeMB}MB)` });
+            }
+          }
+        } else if (!isFFmpegSupported()) {
+          setToast({ kind: "err", msg: "Video compression not supported in this browser" });
+          if (file.size <= 50 * 1024 * 1024) {
+            next.push({ file, preview: URL.createObjectURL(file), type: "video" });
+          }
+        } else {
+          if (file.size > 50 * 1024 * 1024) {
+            setToast({ kind: "err", msg: `${file.name}: Must be under 50MB` });
+            continue;
+          }
+          next.push({ file, preview: URL.createObjectURL(file), type: "video" });
+        }
       } else if (isImage) {
         try {
           const compressed = await imageCompression(file, COMPRESSION_OPTS);
@@ -146,7 +210,11 @@ export default function NewProductPage() {
         }
       }
     }
+    
     setMedia((prev) => [...prev, ...next].slice(0, 6));
+    if (next.length > 0) {
+      setToast({ kind: "ok", msg: `✓ Added ${next.length} file(s) successfully` });
+    }
   };
 
   const removeMedia = (i: number) => {

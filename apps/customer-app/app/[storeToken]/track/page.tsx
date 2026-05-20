@@ -27,6 +27,7 @@ import {
   TrackingCard,
   TrackingSkeleton,
 } from "./_components/TrackingView";
+import { ReviewDialog } from "./_components/ReviewDialog";
 
 export default function TrackByOrderNoPage() {
   return (
@@ -56,6 +57,7 @@ function TrackForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
 
   const search = useCallback(async (id: string) => {
     const trimmed = id.trim();
@@ -69,7 +71,7 @@ function TrackForm() {
       setLoading(true);
       setError(null);
       const res = await fetch(
-        `/api/track-by-no/${encodeURIComponent(trimmed)}`,
+        `/user/api/track-by-no/${encodeURIComponent(trimmed)}`,
         { cache: "no-store" }
       );
       if (!res.ok) {
@@ -189,11 +191,24 @@ function TrackForm() {
             data={data}
             proofUrl={
               data.orderNo
-                ? `/api/track-by-no/${encodeURIComponent(data.orderNo)}/refund-proof`
+                ? `/user/api/track-by-no/${encodeURIComponent(data.orderNo)}/refund-proof`
                 : undefined
             }
           />
-          <TrackingCard data={data} />
+          <TrackingCard 
+            data={data} 
+            onReviewClick={() => setShowReviewDialog(true)}
+          />
+          
+          {/* Review Dialog */}
+          {data.orderNo && data.product?.name && (
+            <ReviewDialog
+              open={showReviewDialog}
+              onOpenChange={setShowReviewDialog}
+              orderNo={data.orderNo}
+              productName={data.product.name}
+            />
+          )}
         </>
       )}
     </>

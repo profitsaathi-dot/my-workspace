@@ -3,24 +3,30 @@ import { getToken } from "next-auth/jwt";
 
 export async function PUT(req: NextRequest) {
   try {
-    const sessionCookie = req.cookies.get("app2-next-auth.session-token");
+    // 1. Determine cookie name dynamically (Works for local dev & production)
+    const isProduction = process.env.NEXT_PUBLIC_ENV === "production";
+    const cookiePrefix = isProduction ? "__Secure-" : "";
+    const COOKIE_NAME = `${cookiePrefix}app2-next-auth.session-token`;
 
-  if (!sessionCookie) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+    const sessionCookie = req.cookies.get(COOKIE_NAME);
 
-  // ✅ decode NextAuth JWT properly
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-    cookieName: "app2-next-auth.session-token",
-  });
+    if (!sessionCookie) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
-  const accessToken = token?.accessToken; // ✅ correct extraction
+    // ✅ decode NextAuth JWT properly with secureCookie flag
+    const token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: COOKIE_NAME,
+      secureCookie: isProduction,
+    });
 
-  if (!accessToken) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+    const accessToken = token?.accessToken; // ✅ correct extraction
+
+    if (!accessToken) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
     const body = await req.json();
 

@@ -3,8 +3,8 @@
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { Toaster, TooltipProvider } from "@workspace/ui";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from "react";
+import { QueryProvider } from "@/lib/query-client";
+
 /**
  * Token-refresh strategy:
  *   `getToken({req})` inside route handlers only DECODES the JWT cookie —
@@ -22,7 +22,6 @@ import { useState } from "react";
  *   when offline so we don't burn battery on dead networks.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
   return (
     <SessionProvider
       refetchInterval={4 * 60}
@@ -37,11 +36,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <TooltipProvider delayDuration={150}>
-          <QueryClientProvider client={queryClient}>
-
-  
-          {children}
-          </QueryClientProvider>
+          <QueryProvider>
+            {children}
+          </QueryProvider>
           <Toaster />
         </TooltipProvider>
       </ThemeProvider>

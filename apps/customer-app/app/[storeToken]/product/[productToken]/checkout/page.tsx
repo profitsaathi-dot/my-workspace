@@ -62,6 +62,7 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const { storeToken, productToken } = useParams<{ storeToken: string; productToken: string }>();
   const qty = Math.max(1, Number(searchParams.get("qty")) || 1);
+  const dynamicPriceToken = searchParams.get("dynamicPrice"); // Get dynamic price token from URL
 
   const t = useTranslations("customer.checkout");
 
@@ -83,6 +84,10 @@ export default function CheckoutPage() {
   const [pincodeValid, setPincodeValid] = useState<boolean | null>(null);
   const pincodeAbortRef = useRef<AbortController | null>(null);
 
+  // Dynamic price state
+  const [dynamicPrice, setDynamicPrice] = useState<number | null>(null);
+  const [dynamicPriceLoading, setDynamicPriceLoading] = useState(false);
+
   // Seller's chosen payment method — drives whether we run Razorpay or open
   // the offline (UPI QR / bank transfer) sheet at confirm time.
   const [storePay, setStorePay] = useState<StorePaymentInfo | null>(null);
@@ -90,6 +95,33 @@ export default function CheckoutPage() {
     orderId: string;
     mode: OfflinePaymentMode;
   } | null>(null);
+
+  // Fetch dynamic price if token is present
+  useEffect(() => {
+    if (!dynamicPriceToken) return;
+    
+    const fetchDynamicPrice = async () => {
+      setDynamicPriceLoading(true);
+      try {
+        const response = await fetch(`/user/api/dynamic-price/${dynamicPriceToken}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === "ACTIVE" && data.price) {
+            setDynamicPrice(data.price);
+          } else {
+            toast.error("Dynamic price offer is no longer available");
+            router.back();
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch dynamic price:", error);
+      } finally {
+        setDynamicPriceLoading(false);
+      }
+    };
+
+    fetchDynamicPrice();
+  }, [dynamicPriceToken, router]);
 
   useEffect(() => {
     if (!storeToken) return;
@@ -147,7 +179,7 @@ export default function CheckoutPage() {
 
   // ───────── early states ─────────
 
-  if (isCheckingAuth || loadingProduct) {
+  if (isCheckingAuth || loadingProduct || dynamicPriceLoading) {
     return (
       <div className="min-h-[60vh] grid place-items-center">
         <Loader2 className="size-8 animate-spin text-[color:var(--accent)]" />
@@ -165,7 +197,10 @@ export default function CheckoutPage() {
 
   // ───────── pricing ─────────
 
-  const { finalPrice, appliedOffer } = calculatePricing(product, festivalOffer);
+  const { finalPrice: calculatedPrice, appliedOffer } = calculatePricing(product, festivalOffer);
+  // Use dynamic price if available, otherwise use calculated price
+  const finalPrice = dynamicPrice !== null ? dynamicPrice : calculatedPrice;
+  const isDynamicPrice = dynamicPrice !== null;
   const total = qty * finalPrice;
 
   // ───────── pay ─────────
@@ -220,6 +255,7 @@ export default function CheckoutPage() {
         comments: "",
       },
       appliedOffer,
+      dynamicPriceToken: dynamicPriceToken || undefined, // Pass dynamic price token
     };
 
     const type = (storePay?.paymentType || "").toUpperCase();
@@ -328,9 +364,16 @@ export default function CheckoutPage() {
 
         {/* Order summary */}
         <Card className="p-4">
-          <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-3">
-            {t("orderSummary")}
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+              {t("orderSummary")}
+            </h2>
+            {isDynamicPrice && (
+              <div className="inline-flex items-center gap-1 bg-[color:var(--accent)] text-[color:var(--accent-foreground)] text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="text-xs">⚡</span> Special Price
+              </div>
+            )}
+          </div>
           <div className="flex gap-4">
             <div className="size-20 rounded-lg bg-muted overflow-hidden shrink-0 relative">
               {productImage ? (
@@ -342,6 +385,11 @@ export default function CheckoutPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 {t("qty")}: {qty} · ₹{finalPrice.toFixed(2)}
               </p>
+              {isDynamicPrice && (
+                <p className="text-[10px] text-[color:var(--accent)] font-medium mt-1">
+                  🎉 Exclusive offer applied
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">

@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
       req,
       secret: process.env.NEXTAUTH_SECRET,
       cookieName: COOKIE_NAME,
+      secureCookie: isProduction,
     });
 
     const accessToken = token?.accessToken as string | undefined;

@@ -23,7 +23,8 @@ const isServer = typeof window === "undefined";
 
 function required(name: string, value: string | undefined): string {
   if (!value || value.length === 0) {
-    if (isServer && process.env.NODE_ENV === "production") {
+    // During build time, allow empty values
+    if (isServer && process.env.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build") {
       throw new Error(`Missing required env var: ${name}`);
     }
     if (isServer) {

@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const res = NextResponse.redirect(new URL("/", req.url));
+  const res = NextResponse.redirect(new URL("/login?error=SessionExpired", req.url));
   const expire = { path: "/", expires: new Date(0) };
   res.cookies.set(SESSION_COOKIE, "", expire);
   res.cookies.set(`${SESSION_COOKIE}.0`, "", expire);

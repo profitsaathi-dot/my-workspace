@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -171,9 +172,19 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium" htmlFor="password">
-                {t("password")}
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium" htmlFor="password">
+                  {t("password")}
+                </label>
+                {mode === "login" && (
+                  <Link
+                    href={`/user/${storeToken}/forgot-password`}
+                    className="text-xs text-[color:var(--accent)] hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
               <Input
                 id="password"
                 type="password"

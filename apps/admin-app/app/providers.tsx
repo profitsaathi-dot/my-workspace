@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { Toaster, TooltipProvider } from "@workspace/ui";
+import { QueryProvider } from "@/lib/query-client";
 import { BASE_PATH } from "@/lib/env";
 
 /**
@@ -33,7 +34,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <TooltipProvider delayDuration={150}>
-          {children}
+          <QueryProvider>
+            {children}
+          </QueryProvider>
           <Toaster />
         </TooltipProvider>
       </ThemeProvider>

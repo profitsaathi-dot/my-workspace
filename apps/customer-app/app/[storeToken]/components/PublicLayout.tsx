@@ -36,13 +36,13 @@ export default function PublicLayout({
   // confirmation flow — collapsing the nav avoids two stacked bars there.
   // Cart keeps the nav visible (its own pay bar sits above it on mobile).
   const hideBottomNav =
-    pathname.endsWith("/checkout") || pathname.endsWith("/login");
+    pathname.endsWith("/checkout") || pathname.endsWith("/login") || pathname.endsWith("/forgot-password");
 
   const { search, setSearch } = useSearch();
   const { data: session } = useSession();
 
   const { isRegisteredUser, userData } = useAuth();
-  const { info: storeInfo, isSocial } = useStoreInfo();
+  const { info: storeInfo, isSocial, loading: storeLoading } = useStoreInfo();
 
   // Prefer the store name returned by /api/v1/store/info; fall back to
   // a tidied-up URL slug only while the request is in flight.
@@ -85,7 +85,16 @@ export default function PublicLayout({
   return (
     <ThemeLayout>
       {({ darkMode, setDarkMode }: any) => (
-        <div className="h-[100dvh] overflow-hidden bg-background text-foreground flex">
+        <>
+          {/* Show loading state while store info is loading to prevent flicker */}
+          {storeLoading ? (
+            <div className="h-[100dvh] flex items-center justify-center bg-background">
+              <div className="animate-pulse text-sm text-muted-foreground">
+                Loading...
+              </div>
+            </div>
+          ) : (
+            <div className="h-[100dvh] overflow-hidden bg-background text-foreground flex">
           {/* DESKTOP SIDEBAR — always-visible at xl+, hidden below */}
           <aside
             className="hidden xl:flex xl:relative xl:w-72 xl:shrink-0
@@ -279,6 +288,8 @@ export default function PublicLayout({
           </nav>
           )}
         </div>
+          )}
+        </>
       )}
     </ThemeLayout>
   );

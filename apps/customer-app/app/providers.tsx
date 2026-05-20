@@ -2,12 +2,10 @@
 
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryProvider } from "@/lib/query-client";
 import { Toaster, TooltipProvider } from "@workspace/ui";
-import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
   return (
     <SessionProvider
       basePath="/user/api/auth"
@@ -27,7 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <TooltipProvider delayDuration={150}>
-          <QueryClientProvider client={queryClient}>
+          <QueryProvider>
             {children}
             {/* Push toasts away from the iOS Dynamic Island / notch and the
                 Android nav bar. env(safe-area-inset-*) resolves to 0 in the
@@ -46,7 +44,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 right: "calc(env(safe-area-inset-right) + 0.75rem)",
               }}
             />
-          </QueryClientProvider>
+          </QueryProvider>
         </TooltipProvider>
       </ThemeProvider>
     </SessionProvider>

@@ -8,6 +8,7 @@ import {
   ExternalLink,
   Package,
   RotateCcw,
+  Star,
   Truck,
 } from "lucide-react";
 import {
@@ -62,7 +63,7 @@ export function OrderSummary({ data }: { data: PublicTracking }) {
   );
 }
 
-export function TrackingCard({ data }: { data: PublicTracking }) {
+export function TrackingCard({ data, onReviewClick }: { data: PublicTracking; onReviewClick?: () => void }) {
   const hasShipping =
     !!data.shippingVendor && !!data.trackingId && data.trackingId.trim() !== "";
 
@@ -75,11 +76,24 @@ export function TrackingCard({ data }: { data: PublicTracking }) {
     (data.orderStatus ?? "").toUpperCase() === "CANCELLED" ||
     (data.paymentStatus ?? "").toUpperCase() === "REFUND";
 
+  const isDelivered = (data.orderStatus ?? "").toUpperCase() === "DELIVERED";
+  
+  console.log("[TrackingCard] Render:", { 
+    orderStatus: data.orderStatus, 
+    isDelivered, 
+    hasShipping,
+    orderClosed,
+    onReviewClickExists: !!onReviewClick 
+  });
+
   const copyTrackingId = async () => {
     if (!data.trackingId) return;
-    const ok = await copyToClipboard(data.trackingId);
-    if (ok) toast.success("Tracking ID copied");
-    else toast.error("Could not copy");
+    const result = await copyToClipboard(data.trackingId);
+    if (result.success) {
+      toast.success("Tracking ID copied");
+    } else {
+      toast.error(result.error || "Could not copy");
+    }
   };
 
   const openTracking = () => {
@@ -161,11 +175,28 @@ export function TrackingCard({ data }: { data: PublicTracking }) {
           </li>
         </ol>
 
-        {(data.orderStatus ?? "").toUpperCase() === "DELIVERED" ? (
-          <p className="border-t pt-3 text-[11px] leading-relaxed text-muted-foreground">
-            If you still haven't received the product, please contact your
-            local delivery partner with the tracking ID above.
-          </p>
+        {isDelivered ? (
+          <div className="space-y-3 border-t pt-3">
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              If you still haven't received the product, please contact your
+              local delivery partner with the tracking ID above.
+            </p>
+            <Button
+              onClick={() => {
+                if (onReviewClick) {
+                  onReviewClick();
+                } else {
+                  console.error("[TrackingCard] onReviewClick is undefined!");
+                }
+              }}
+              variant="outline"
+              size="lg"
+              className="w-full justify-center border-[color:var(--accent)] text-[color:var(--accent)] hover:bg-[color:var(--accent-soft)]"
+            >
+              <Star className="size-4" />
+              Write a Review
+            </Button>
+          </div>
         ) : (
           <p className="border-t pt-3 text-[11px] leading-relaxed text-muted-foreground">
             The carrier's tracking page is operated by them — not by us. If

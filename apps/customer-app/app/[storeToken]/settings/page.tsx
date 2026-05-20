@@ -65,7 +65,7 @@ export default function SettingsPage() {
   const { data: session, status } = useSession();
   const [accent, setAccent] = useAccentCookie();
   const t = useTranslations("customer.settings");
-  const { isSocial } = useStoreInfo();
+  const { isSocial, loading: storeLoading } = useStoreInfo();
 
   const isLoggedIn = !!session;
 
@@ -76,6 +76,8 @@ export default function SettingsPage() {
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeValid, setPincodeValid] = useState<boolean | null>(null);
   
+  const app_version = process.env.NEXT_PUBLIC_APP_VERSION ;
+  const app_name = process.env.NEXT_PUBLIC_APP_NAME ;
 
   const [form, setForm] = useState<{
     name: string;
@@ -119,7 +121,7 @@ const [newAddress, setNewAddress] = useState<Address>({
     { label: t("profile"), icon: <User size={18} />, section: "profile", protected: true, hideForSocial: true },
     { label: t("security"), icon: <Lock size={18} />, section: "security", protected: true, hideForSocial: true },
     { label: t("address"), icon: <MapPin size={18} />, section: "address", protected: false, hideForSocial: true },
-    { label: t("notifications"), icon: <Info size={18} />, section: "notifications", protected: false, hideForSocial: false },
+    { label: t("notifications"), icon: <Info size={18} />, section: "notifications", protected: false, hideForSocial: true },
     { label: t("preferences"), icon: <Settings size={18} />, section: "preferences", protected: false, hideForSocial: false },
     { label: t("appInfo"), icon: <Info size={18} />, section: "app", protected: false, hideForSocial: false },
   ].filter((item) => !(isSocial && item.hideForSocial));
@@ -405,7 +407,7 @@ const [newAddress, setNewAddress] = useState<Address>({
 
   return (
     <div className="flex-1 pb-10 min-h-full bg-background">
-      {status === "loading" ? (
+      {status === "loading" || storeLoading ? (
         <div className="flex items-center justify-center h-[60vh]">
           <div className="animate-pulse text-sm text-muted-foreground">
             {t("loading")}
@@ -775,8 +777,8 @@ const [newAddress, setNewAddress] = useState<Address>({
                     <Info size={28} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold">ProfitSaathi</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Version 1.0.0</p>
+                    <h3 className="text-lg font-semibold">{app_name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Version {app_version}</p>
                   </div>
                   <div className="text-xs text-muted-foreground mt-6 pt-6 border-t border-themed">
                     © {new Date().getFullYear()} All rights reserved.

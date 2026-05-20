@@ -46,9 +46,9 @@ export default function OrderSuccessPage() {
 
   const copyOrderId = async () => {
     if (!orderId) return;
-    const ok = await copyToClipboard(orderId);
-    if (!ok) {
-      toast.error(t("copyFailed") ?? "Could not copy");
+    const result = await copyToClipboard(orderId);
+    if (!result.success) {
+      toast.error(result.error || t("copyFailed") || "Could not copy");
       return;
     }
     setCopied(true);

@@ -18,7 +18,13 @@ async function forwardMultipart(req: NextRequest, method: "POST" | "PUT") {
       out.append("mainImageIndex", mainIndex.toString());
     }
 
-    // 3. Handle Media (Images and Videos)
+    // 3. Handle keepIndices for updates (which existing media to keep)
+    const keepIndices = incoming.get("keepIndices");
+    if (keepIndices) {
+      out.append("keepIndices", keepIndices.toString());
+    }
+
+    // 4. Handle Media (Images and Videos)
     // We loop through "media" because that's what your frontend now uses
     for (const file of incoming.getAll("media")) {
       if (file instanceof File) {
@@ -26,7 +32,7 @@ async function forwardMultipart(req: NextRequest, method: "POST" | "PUT") {
       }
     }
 
-    // 4. Backward Compatibility (Optional)
+    // 5. Backward Compatibility (Optional)
     // If you still have parts of the app sending "image", keep this loop
     for (const img of incoming.getAll("image")) {
       if (img instanceof File) {

@@ -138,7 +138,11 @@ function LoginInner() {
 
   const errorMessage =
     formError ??
-    (errorParam ? `${t("auth.signInFailed")}: ${errorParam}` : null);
+    (errorParam === "SessionExpired" 
+      ? "Your session has expired. Please sign in again." 
+      : errorParam 
+        ? `${t("auth.signInFailed")}: ${errorParam}` 
+        : null);
 
   return (
     <div className="relative flex min-h-screen flex-1 items-center justify-center bg-background pattern-grid">
@@ -192,7 +196,15 @@ function LoginInner() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">{t("auth.password")}</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">{t("auth.password")}</Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-[color:var(--accent)] hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

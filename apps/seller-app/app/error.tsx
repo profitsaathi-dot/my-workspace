@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@workspace/ui";
 import { useT } from "@/src/i18n/useT";
+import * as Sentry from "@sentry/nextjs";
 
 export default function GlobalError({
   error,
@@ -14,7 +15,14 @@ export default function GlobalError({
 }) {
   const t = useT();
   useEffect(() => {
-    // TODO: send to your telemetry pipeline
+    // Send error to Sentry
+    Sentry.captureException(error, {
+      tags: {
+        component: "GlobalError",
+        digest: error.digest,
+      },
+      level: "error",
+    });
     console.error("[GlobalError]", error);
   }, [error]);
 

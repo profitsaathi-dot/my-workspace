@@ -176,13 +176,13 @@ export default function WhatsAppPage() {
 
         {!loading && data && (
           <>
-            {data.status === "WORKING" && data.connected ? (
+            {data.status === "ready" && data.connected ? (
               <ConnectedCard
-                phoneNumber={data.phoneNumber ?? undefined}
+                phoneNumber={data.phone ?? undefined}
                 pushName={data.pushName ?? undefined}
                 onDisconnect={() => setDisconnectOpen(true)}
               />
-            ) : data.status === "SCAN_QR_CODE" && data.qrBase64 ? (
+            ) : data.status === "qr_ready" && data.qrBase64 ? (
               <QrCard
                 qrBase64={data.qrBase64}
                 mimetype={data.qrMimetype}
@@ -197,7 +197,7 @@ export default function WhatsAppPage() {
               <DisconnectedCard onConnect={connect} connecting={connecting} />
             )}
 
-            {data.status === "WORKING" && data.connected && <SendTestCard />}
+            {data.status === "ready" && data.connected && <SendTestCard />}
           </>
         )}
       </main>
@@ -243,7 +243,7 @@ export default function WhatsAppPage() {
 }
 
 function StatusBadge({ status }: { status: WhatsAppStatus }) {
-  if (status === "WORKING") return <Badge variant="success">Connected</Badge>;
+  if (status === "ready") return <Badge variant="success">Connected</Badge>;
   if (status === "SCAN_QR_CODE") return <Badge variant="warning">Awaiting scan</Badge>;
   if (status === "STARTING") return <Badge variant="info">Starting</Badge>;
   if (status === "FAILED") return <Badge variant="danger">Failed</Badge>;

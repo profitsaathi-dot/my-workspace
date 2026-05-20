@@ -82,20 +82,32 @@ export default function DynamicPriceListPage() {
     [listings, filter]
   );
 
-  const buildPublicUrl = (token: string) =>
-    typeof window === "undefined" ? `/dp/${token}` : `${window.location.origin}/dp/${token}`;
+  const buildPublicUrl = (listing: DynamicPriceListing) => {
+    // Use the customerUrl from backend if available (points to customer-app)
+    if (listing.customerUrl || listing.shareableLink) {
+      const path = listing.customerUrl || listing.shareableLink;
+      // Get the customer-app base URL from environment or construct it
+      const customerAppUrl = process.env.NEXT_PUBLIC_CUSTOMER_APP_URL || "http://localhost:8084/user";
+      return `${customerAppUrl}${path}`;
+    }
+    // Fallback to old seller-app URL (shouldn't happen with updated backend)
+    return typeof window === "undefined" 
+      ? `/dp/${listing.publicToken}` 
+      : `${window.location.origin}/dp/${listing.publicToken}`;
+  };
 
-  const copy = async (token: string) => {
+  const copy = async (listing: DynamicPriceListing) => {
     try {
-      await navigator.clipboard.writeText(buildPublicUrl(token));
+      await navigator.clipboard.writeText(buildPublicUrl(listing));
       toast.success("Link copied");
     } catch {
       toast.error("Could not copy");
     }
   };
 
-  const shareWA = (token: string, productName?: string) => {
-    const url = buildPublicUrl(token);
+  const shareWA = (listing: DynamicPriceListing) => {
+    const url = buildPublicUrl(listing);
+    const productName = listing.product?.name;
     const text = encodeURIComponent(
       `Here's your custom price${productName ? ` for ${productName}` : ""}: ${url}`
     );
@@ -198,8 +210,8 @@ export default function DynamicPriceListPage() {
               <ListingCard
                 key={l.publicToken}
                 listing={l}
-                onCopy={() => copy(l.publicToken)}
-                onShareWA={() => shareWA(l.publicToken, l.product?.name)}
+                onCopy={() => copy(l)}
+                onShareWA={() => shareWA(l)}
                 onCancel={() => setPendingCancel(l)}
                 cancelling={cancellingId === l.id}
               />

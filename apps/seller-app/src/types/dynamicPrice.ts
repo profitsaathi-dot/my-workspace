@@ -20,6 +20,8 @@ export interface DynamicPriceListing {
   createdAt?: string;
   usedAt?: string | null;
   product?: DynamicPriceProductRef;
+  customerUrl?: string; // Customer-facing URL path (e.g., /annu_store/dynamic/dp_xxx)
+  shareableLink?: string; // Alias for customerUrl
 }
 
 export interface DynamicPriceCreateRequest {

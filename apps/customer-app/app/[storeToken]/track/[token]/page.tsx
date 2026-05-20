@@ -12,24 +12,26 @@ import {
   TrackingCard,
   TrackingSkeleton,
 } from "../_components/TrackingView";
+import { ReviewDialog } from "../_components/ReviewDialog";
 
 export default function TrackByTokenPage({
   params,
 }: {
-  params: Promise<{ token: string }>;
+  params: Promise<{ token: string; storeToken: string }>;
 }) {
   const t = useTranslations("customer.track");
-  const { token } = use(params);
+  const { token, storeToken } = use(params);
   const [data, setData] = useState<PublicTracking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`/api/track/${encodeURIComponent(token)}`, {
+        const res = await fetch(`/user/api/track/${encodeURIComponent(token)}`, {
           cache: "no-store",
         });
         if (!res.ok) {
@@ -68,9 +70,26 @@ export default function TrackByTokenPage({
           <OrderSummary data={data} />
           <RefundCard
             data={data}
-            proofUrl={`/api/track/${encodeURIComponent(token)}/refund-proof`}
+            proofUrl={`/user/api/track/${encodeURIComponent(token)}/refund-proof`}
           />
-          <TrackingCard data={data} />
+          <TrackingCard 
+            data={data} 
+            onReviewClick={() => {
+              setShowReviewDialog(true);
+            }}
+          />
+          
+          {/* Review Dialog */}
+          {data.orderNo && data.product?.name ? (
+            <ReviewDialog
+              open={showReviewDialog}
+              onOpenChange={(open) => {
+                setShowReviewDialog(open);
+              }}
+              orderNo={data.orderNo}
+              productName={data.product.name}
+            />
+          ) : null}
         </>
       )}
     </PageShell>

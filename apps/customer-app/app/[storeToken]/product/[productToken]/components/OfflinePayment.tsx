@@ -96,9 +96,9 @@ export default function OfflinePayment({
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const copy = async (key: string, text: string) => {
-    const ok = await copyToClipboard(text);
-    if (!ok) {
-      toast.error(t("copyFailed"));
+    const result = await copyToClipboard(text);
+    if (!result.success) {
+      toast.error(result.error || t("copyFailed"));
       return;
     }
     setCopiedKey(key);

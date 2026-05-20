@@ -20,6 +20,7 @@ const PUBLIC_EXACT = new Set<string>([
   "/signup",
   "/onboarding",
   "/verify-email",
+  "/forgot-password",
 ]);
 
 function isPublic(pathname: string): boolean {
@@ -67,7 +68,9 @@ export async function proxy(req: NextRequest) {
   }
 
   if (token?.error === "RefreshAccessTokenError") {
-    return NextResponse.redirect(new URL("/api/auth/signout", req.url));
+    console.log("[proxy] Refresh token expired, clearing session");
+    // Use our custom logout route which properly clears all cookies
+    return NextResponse.redirect(new URL("/api/auth/logout", req.url));
   }
 
   // Authed user landing on the marketing page, login, or signup → straight to the app.
