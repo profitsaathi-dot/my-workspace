@@ -28,7 +28,6 @@ import {
   Topbar,
   formatINR,
 } from "@workspace/ui";
-import { encryptAES } from "@/src/lib/crypto/aes";
 import { compressVideo, isFFmpegSupported } from "@/src/lib/video-compressor";
 import { useT } from "@/src/i18n/useT";
 
@@ -241,10 +240,9 @@ export default function NewProductPage() {
         competitorPrice: competitor,
         sellingPrice: finalTotal,
       };
-      const encrypted = await encryptAES(JSON.stringify(payload));
 
       const fd = new FormData();
-      fd.append("request", encrypted);
+      fd.append("request", JSON.stringify(payload));
       media.forEach((item) => fd.append("media", item.file));
       fd.append("mainImageIndex", mainIndex.toString());
 

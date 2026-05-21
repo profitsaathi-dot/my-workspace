@@ -10,11 +10,13 @@ import { z } from "zod";
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
-
   NEXT_PUBLIC_URL: z.string().url().describe("Base URL of the Main APP"),
   NEXT_PUBLIC_URL_USER: z.string().url().describe("Base URL of the User APP"),
   // Spring backend
   NEXT_PUBLIC_API_URL: z.string().url().describe("Base URL of the Spring API"),
+
+  // IMPORTANT: Server-side ONLY! Base64-encoded 32-byte key (44 chars)
+  AES_KEY: z.string().length(44, "AES_KEY must be a 44-character Base64 string (32 bytes encoded)"),
 
   // NextAuth
   NEXTAUTH_SECRET: z.string().min(16),
@@ -36,7 +38,6 @@ const clientSchema = z.object({
   NEXT_PUBLIC_URL: z.string().url(),
   NEXT_PUBLIC_URL_USER: z.string().url(),
   NEXT_PUBLIC_API_URL: z.string().url(),
-  NEXT_PUBLIC_AES_KEY: z.string().min(16),
   NEXT_PUBLIC_RAZORPAY_KEY_ID: z.string().optional(),
   NEXT_PUBLIC_APP_NAME: z.string().default("ProfitSaathi"),
   NEXT_PUBLIC_APP_VERSION: z.string().default("1.0.0"),
@@ -59,7 +60,6 @@ const parsedClient = clientSchema.safeParse({
   NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
   NEXT_PUBLIC_URL_USER: process.env.NEXT_PUBLIC_URL_USER,
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-  NEXT_PUBLIC_AES_KEY: process.env.NEXT_PUBLIC_AES_KEY,
   NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION,

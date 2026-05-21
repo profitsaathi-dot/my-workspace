@@ -43,7 +43,8 @@ const POLL_MS = 3000;
 type WhatsAppStatus =
   | "DISCONNECTED"
   | "STARTING"
-  | "SCAN_QR_CODE"
+  | "QR_READY"
+  | "created"
   | "READY"
   | "FAILED";
 
@@ -120,7 +121,7 @@ export default function WhatsAppPage() {
   const shouldPoll = useMemo(() => {
     return (
       data?.status === "STARTING" ||
-      data?.status === "SCAN_QR_CODE"
+      data?.status === "QR_READY"
     );
   }, [data?.status]);
 
@@ -205,7 +206,7 @@ export default function WhatsAppPage() {
       }
 
       const normalizedStatus = (
-        result.status || "SCAN_QR_CODE"
+        result.status || "qr_ready"
       ).toUpperCase() as WhatsAppStatus;
 
       setData({
@@ -318,7 +319,7 @@ export default function WhatsAppPage() {
 
                 <SendTestCard />
               </>
-            ) : data.status === "SCAN_QR_CODE" &&
+            ) : data.status === "QR_READY" &&
               data.qrBase64 ? (
               <QrCard
                 qrBase64={data.qrBase64}
@@ -400,7 +401,7 @@ function StatusBadge({
     case "READY":
       return <Badge variant="success">Connected</Badge>;
 
-    case "SCAN_QR_CODE":
+    case "QR_READY":
       return <Badge variant="warning">Awaiting Scan</Badge>;
 
     case "STARTING":
@@ -539,7 +540,7 @@ function QrCard({
           Waiting for QR scan...
         </div>
 
-        <StatusBadge status="SCAN_QR_CODE" />
+        <StatusBadge status="QR_READY" />
 
         <Button
           variant="outline"

@@ -1,16 +1,20 @@
 import type { NextRequest } from "next/server";
 import { productService } from "@/src/services";
 import { BadRequestError, toApiResponse } from "@/src/lib/http/errors";
+import { encryptAES } from "@/src/lib/crypto/aes";
 
 async function forwardMultipart(req: NextRequest, method: "POST" | "PUT") {
   try {
     const incoming = await req.formData();
     const out = new FormData();
 
-    // 1. Handle the encrypted JSON payload
+    // 1. Handle the JSON payload - encrypt it server-side
     const requestValue = incoming.get("request");
     if (!requestValue) throw new BadRequestError("Missing 'request' parameter");
-    out.append("request", requestValue.toString());
+    
+    // Encrypt the payload (AES_KEY is only available server-side)
+    const encrypted = await encryptAES(requestValue.toString());
+    out.append("request", encrypted);
 
     // 2. Handle the Main Image Index (Important for the backend to know which is the thumbnail)
     const mainIndex = incoming.get("mainImageIndex");

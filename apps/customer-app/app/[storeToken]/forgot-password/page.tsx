@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { Button, Input, Label } from "@workspace/ui";
+import { encryptAES } from "@/lib/crypto/aes";
 
 // This page should be accessible without authentication
 export default function ForgotPasswordPage() {
@@ -32,10 +33,12 @@ export default function ForgotPasswordPage() {
 
     setBusy(true);
     try {
+      const encrypted = await encryptAES(JSON.stringify({ email: email.trim() }));
+      
       const res = await fetch("/user/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ request: encrypted }),
       });
 
       const data = await res.json();
@@ -75,14 +78,16 @@ export default function ForgotPasswordPage() {
 
     setBusy(true);
     try {
+      const encrypted = await encryptAES(JSON.stringify({
+        email: email.trim(),
+        otp: otp.trim(),
+        newPassword,
+      }));
+      
       const res = await fetch("/user/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          otp: otp.trim(),
-          newPassword,
-        }),
+        body: JSON.stringify({ request: encrypted }),
       });
 
       const data = await res.json();
@@ -253,10 +258,12 @@ export default function ForgotPasswordPage() {
                   setFormError(null);
                   setBusy(true);
                   try {
+                    const encrypted = await encryptAES(JSON.stringify({ email: email.trim() }));
+                    
                     const res = await fetch("/user/api/auth/forgot-password", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email: email.trim() }),
+                      body: JSON.stringify({ request: encrypted }),
                     });
                     const data = await res.json();
                     if (res.ok) {

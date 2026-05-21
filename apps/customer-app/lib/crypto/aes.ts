@@ -1,5 +1,5 @@
 /**
- * AES-GCM-256 encrypter that pairs with the Spring backend decrypter.
+ * AES-GCM-256 encrypter for customer-app that pairs with the Spring backend decrypter.
  * Output format: base64( IV(12 bytes) || ciphertext || authTag(16 bytes) ).
  *
  * Browser-safe — uses Web Crypto. Reads the shared key from AES_KEY

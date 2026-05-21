@@ -28,7 +28,6 @@ import {
   Topbar,
   formatINR,
 } from "@workspace/ui";
-import { encryptAES } from "@/src/lib/crypto/aes";
 import { compressVideo, isFFmpegSupported } from "@/src/lib/video-compressor";
 import type { Product } from "@/src/types/product";
 
@@ -290,9 +289,8 @@ export default function EditProductPage({
         competitorPrice: competitor,
         sellingPrice: finalTotal,
       };
-      const encrypted = await encryptAES(JSON.stringify(payload));
       const fd = new FormData();
-      fd.append("request", encrypted);
+      fd.append("request", JSON.stringify(payload));
       
       // Build media update info
       // Track which existing media to keep and which are new

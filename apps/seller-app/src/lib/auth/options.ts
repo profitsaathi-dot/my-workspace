@@ -103,13 +103,17 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        // Encrypt the login request
+        const { encryptAES } = await import("@/src/lib/crypto/aes");
+        const encrypted = await encryptAES(JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+        }));
+
         const res = await fetch(backendUrl("/api/v1/auth/login"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
+          body: JSON.stringify({ request: encrypted }),
         });
 
         if (!res.ok) {
